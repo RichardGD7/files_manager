@@ -1,10 +1,11 @@
 """File Management"""
 
 import os
+import json
 
 
-def create(file_name: str, content: str = None) -> None:
-    """Create a file if content is none or create a file with content if apply"""
+def create(file_name: str, content: list | dict = None) -> None:
+    """Create a JSON file with a lis or dict type"""
     # Ternario
     mode = "w" if content else "x"
     try:
@@ -17,23 +18,25 @@ def create(file_name: str, content: str = None) -> None:
         raise OSError(f"You do not have permission to create '{file_name}'") from error
 
     if content:
-        file.write(content)
+        json_content = json.dumps(content)
+        file.write(json_content)
 
     file.close()
 
 
-def update(file_name: str, content: str, overwrite: bool = False) -> None:
+def update(file_name: str, content: list | dict, overwrite: bool = False) -> None:
     """Create a file if content is none or create a file with content if apply"""
-    if not isinstance(content, str) or content == "":
+    if not isinstance(content, list) or isinstance(content, dict):
         raise ValueError("'content' arguments must be specified")
 
     mode = "w" if overwrite else "a"
     file = open(file_name, mode)
-    file.write(content)
+    json_content = json.dumps(content)
+    file.write(json_content)
     file.close()
 
 
-def read(file_name: str) -> str:
+def read(file_name: str) -> list | dict:
     """Returns the Content of a text file
     Args:
         file_name (str): File name or path
@@ -42,7 +45,8 @@ def read(file_name: str) -> str:
     if not os.path.exists(file_name):
         raise FileNotFoundError(f"File {file_name} was not found")
 
-    file = open(file_name)
+    json_file = open(file_name)
+    file = json.loads(json_file)
     content = file.read()
     file.close()
     return content
