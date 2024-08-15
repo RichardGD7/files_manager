@@ -9,7 +9,7 @@ def create(file_name: str, content: list | dict = None) -> None:
     # Ternario
     mode = "w" if content else "x"
     try:
-        file = open(file_name, mode)
+        file = open(file_name, mode, encoding="utf-8")
 
     except FileExistsError as error:
         raise OSError(f"File '{file_name}' already exists") from error
@@ -17,22 +17,42 @@ def create(file_name: str, content: list | dict = None) -> None:
     except PermissionError as error:
         raise OSError(f"You do not have permission to create '{file_name}'") from error
 
-    if content:
-        json_content = json.dumps(content)
-        file.write(json_content)
+    if content and isinstance(content, (list, dict)):
+        content = json.dumps(content)
+        file.write(content)
 
     file.close()
 
 
 def update(file_name: str, content: list | dict, overwrite: bool = False) -> None:
-    """Create a file if content is none or create a file with content if apply"""
-    if not isinstance(content, list) or isinstance(content, dict):
-        raise ValueError("'content' arguments must be specified")
+    """Update a JSON file"""
+    if not isinstance(content, (list, dict)):
+        raise TypeError("'content' must be a list or dict type")
 
-    mode = "w" if overwrite else "a"
-    file = open(file_name, mode)
-    json_content = json.dumps(content)
-    file.write(json_content)
+    if overwrite:
+        file_content = content
+
+    elif not overwrite:
+        file = open(file_name, encoding="utf-8")
+        file_content = json.loads(file.read())
+        file.close()
+
+        if isinstance(file_content, list):
+            if isinstance(content, list):
+                file_content.extend(content)
+
+            elif isinstance(content, dict):
+                file_content.append(content)
+
+        elif isinstance(file_content, dict):
+            if isinstance(content, list):
+                file_content = [file_content] + content
+
+            elif isinstance(content, dict):
+                file_content = [file_content, content]
+
+    file = open(file_name, "w", encoding="utf-8")
+    file.write(json.dumps(file_content))
     file.close()
 
 
@@ -45,8 +65,8 @@ def read(file_name: str) -> list | dict:
     if not os.path.exists(file_name):
         raise FileNotFoundError(f"File {file_name} was not found")
 
-    json_file = open(file_name)
-    file = json.loads(json_file)
-    content = file.read()
-    file.close()
+    json_file = open(file_name, encoding="utf-8")
+    # file = json.loads(json_file)
+    content = json_file.read()
+    json_file.close()
     return content
