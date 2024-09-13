@@ -1,0 +1,16 @@
+[
+  {
+    "title": "El llano en llamas: Rese\u00f1a",
+    "content": "Contenido de la rese\u00f1a",
+    "status": "on",
+    "image": "https://image.com",
+    "created_by": "Charly Brown Jr"
+  },
+  {
+    "title": "Sidartha",
+    "content": "Un gran libro",
+    "status": "on",
+    "image": "https://image2.com",
+    "created_by": "Herman Hesse"
+  }
+]

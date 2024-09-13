@@ -17,8 +17,14 @@ def create(file_name: str, content: list | dict = None) -> None:
     except PermissionError as error:
         raise OSError(f"You do not have permission to create '{file_name}'") from error
 
-    if content and isinstance(content, (list, dict)):
-        content = json.dumps(content)
+    # if content and isinstance(content, (list, dict)):
+    #     content = json.dumps(content)
+    #     file.write(content)
+
+    if content:
+        if isinstance(content, (list, dict)):
+            content = json.dumps(content)
+
         file.write(content)
 
     file.close()
@@ -70,3 +76,46 @@ def read(file_name: str) -> list | dict:
     content = json_file.read()
     json_file.close()
     return content
+
+
+def update2(
+    file_name: str, content: list | dict | str, overwrite: bool = False
+) -> None:
+    """Update a JSON file"""
+    if not isinstance(content, (list, dict, str)):
+        raise TypeError("'content' must be a list or dict type")
+
+    if overwrite:
+        file_content = content
+
+    elif not overwrite:
+        file = open(file_name, encoding="utf-8")
+        file_content = file.read()
+
+        try:
+            file_content = json.loads(file_content)
+        except Exception:
+            file_content = file_content + content
+        file.close()
+
+        if isinstance(file_content, list):
+            if isinstance(content, list):
+                file_content.extend(content)
+
+            elif isinstance(content, dict):
+                file_content.append(content)
+
+        elif isinstance(file_content, dict):
+            if isinstance(content, list):
+                file_content = [file_content] + content
+
+            elif isinstance(content, dict):
+                file_content = [file_content, content]
+
+    file = open(file_name, "w", encoding="utf-8")
+
+    if not isinstance(file_content, str):
+        file_content = json.dumps(file_content)
+
+    file.write(file_content)
+    file.close()
